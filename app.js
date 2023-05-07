@@ -3,8 +3,8 @@ const todosContainer = document.querySelector('.todos-container')
 const formSearch = document.querySelector('.form-search')
 const formEditTodo = document.querySelector('.form-edit-todo')
 
-const addTodo = (inputValue, isEdit) => {
-  if (inputValue.length && !isEdit) {
+const addTodo = (inputValue) => {
+  if (inputValue.length) {
     todosContainer.innerHTML += `
     <li class="list-group-item d-flex justify-content-between align-items-center" data-todo="${inputValue}">
       <span>${inputValue}</span>
@@ -21,6 +21,7 @@ const addTodo = (inputValue, isEdit) => {
 const removeTodo = clickedElement => {
   if (clickedElement) {
     document.querySelector(`[data-todo="${clickedElement}"]`).remove()
+    deletePersistGiven(clickedElement)
   }
 }
 
@@ -33,7 +34,10 @@ const removeFormAddTodoEventListener = () => formAddTodo.removeEventListener('su
 
 const handleSubimitFormEditTodo = clickedElement => {
   const editableElement = document.querySelector(`[data-todo="${clickedElement}"]`)
-  editableElement.children[0].textContent = event.target.add.value
+  const modifiedValueInput = event.target.add.value
+  editableElement.children[0].textContent = modifiedValueInput
+  editPersistGiven(clickedElement, modifiedValueInput)
+
   event.target.reset()
 }
 
@@ -74,11 +78,25 @@ const showTodos = (todos, inputValue) => {
   manipulateClasses(todosToShow, 'd-flex', 'hidden')
 }
 
+const persistGiven = (key, value) => {
+  localStorage.setItem(key, value)
+}
+
+const editPersistGiven = (key, value) => {
+  localStorage.removeItem(key)
+  localStorage.setItem(key, value)
+}
+
+const deletePersistGiven = key => {
+  localStorage.removeItem(key)
+}
+
 const handleAddSubmit = event => {
   event.preventDefault()
   const inputValue = event.target.add.value.trim()
 
-  addTodo(inputValue, false)
+  addTodo(inputValue)
+  persistGiven(inputValue, inputValue)
 }
 
 const handleSearchSubmit = event => {
@@ -89,7 +107,7 @@ const handleSearchSubmit = event => {
   showTodos(todos, inputValue)
 }
 
-handleClickTodosContainer = event => {
+const handleClickTodosContainer = event => {
   const clickedElementTrash = event.target.dataset.trash
   const clickedElementPen = event.target.dataset.pen
 
